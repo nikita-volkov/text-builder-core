@@ -11,6 +11,10 @@ import TextBuilderDev.Domains.Other
 import TextBuilderDev.Domains.Padding
 import TextBuilderDev.Prelude hiding (intercalate, length, null)
 
+#if !MIN_VERSION_text(2,0,0)
+import qualified Data.Text.Encoding as TextEncoding
+#endif
+
 -- | Hexadecimal readable representation of binary data.
 --
 -- >>> hexByteString "Hello"

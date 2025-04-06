@@ -6,10 +6,6 @@ import qualified Data.Text.Array as TextArray
 import qualified Data.Text.Internal as TextInternal
 import TextBuilderDev.Prelude hiding (null)
 
-#if !MIN_VERSION_text(2,0,0)
-import qualified Data.Text.Encoding as TextEncoding
-#endif
-
 -- |
 -- Specification of how to efficiently construct strict 'Text'.
 --
