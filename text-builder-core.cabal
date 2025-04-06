@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name: text-builder-core
-version: 0
+version: 0.1
 category: Text, Builders
 synopsis: Internals of "text-builder"
 description:
