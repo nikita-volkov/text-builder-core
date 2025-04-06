@@ -31,6 +31,8 @@ jobs:
       ghc: "8.8.1"
       skip-doctest: true
       skip-benchmarks: true
+      test-options: >
+        --quickcheck-tests 10_000
   
   build-with-ghc-9-4-and-text-1-2:
     uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/build.yaml@v4
@@ -40,6 +42,8 @@ jobs:
       cabal-configure-extra-args: >
         --constraint="text==1.2.5.0"
       skip-benchmarks: true
+      test-options: >
+        --quickcheck-tests 10_000
   
   build-with-ghc-9-4-and-text-2-0-2:
     uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/build.yaml@v4
@@ -49,6 +53,8 @@ jobs:
       cabal-configure-extra-args: >
         --constraint="text==2.0.2"
       skip-benchmarks: true
+      test-options: >
+        --quickcheck-tests 10_000
   
   build-with-latest:
     uses: nikita-volkov/haskell-hackage-lib-github-actions-workflows/.github/workflows/build.yaml@v4
