@@ -160,9 +160,9 @@ All
         Data.Text.Builder.Linear:             OK
           174  μs ±  16 μs, 952 KB allocated, 156 B  copied,  36 MB peak memory
   Features
-    bits:                                     OK
+    finiteBits:                               OK
       25.2 ns ± 2.0 ns, 112 B  allocated,   0 B  copied, 6.0 MB peak memory
-    paddedBits:                               OK
+    paddedFiniteBits:                         OK
       62.4 ns ± 3.9 ns, 152 B  allocated,   0 B  copied, 6.0 MB peak memory
     binary:                                   OK
       127  ns ± 6.4 ns, 1.4 KB allocated,   0 B  copied, 6.0 MB peak memory

@@ -73,7 +73,8 @@ library
   exposed-modules: TextBuilderDev
   other-modules:
     TextBuilderDev.Core
-    TextBuilderDev.Domains.Data
+    TextBuilderDev.Domains.Bits
+    TextBuilderDev.Domains.ByteString
     TextBuilderDev.Domains.Digits
     TextBuilderDev.Domains.Other
     TextBuilderDev.Domains.Padding

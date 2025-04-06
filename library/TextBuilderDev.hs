@@ -23,12 +23,6 @@ module TextBuilderDev
     text,
     lazyText,
     string,
-    unsafeUtf8ByteString,
-
-    -- ** Data
-    bits,
-    paddedBits,
-    hexData,
 
     -- ** Character
     char,
@@ -42,9 +36,13 @@ module TextBuilderDev
     utf8CodeUnits3,
     utf8CodeUnits4,
 
-    -- ** Digits
-    decimalDigit,
-    hexadecimalDigit,
+    -- ** ByteString
+    hexByteString,
+    unsafeUtf8ByteString,
+
+    -- ** Bits
+    finiteBits,
+    paddedFiniteBits,
 
     -- ** Integers
 
@@ -72,6 +70,10 @@ module TextBuilderDev
     fixedDouble,
     doublePercent,
 
+    -- ** Digits
+    decimalDigit,
+    hexadecimalDigit,
+
     -- ** Time
     utcTimeInIso8601,
     utcTimestampInIso8601,
@@ -85,7 +87,8 @@ module TextBuilderDev
 where
 
 import TextBuilderDev.Core
-import TextBuilderDev.Domains.Data
+import TextBuilderDev.Domains.Bits
+import TextBuilderDev.Domains.ByteString
 import TextBuilderDev.Domains.Digits
 import TextBuilderDev.Domains.Other
 import TextBuilderDev.Domains.Padding
