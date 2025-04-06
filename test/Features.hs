@@ -3,6 +3,7 @@ module Features (tests) where
 import Control.Monad
 import Data.String
 import qualified Data.Text as Text
+import qualified Data.Text.Lazy as Text.Lazy
 import Test.QuickCheck.Instances ()
 import Test.Tasty
 import Test.Tasty.QuickCheck
@@ -23,16 +24,24 @@ tests =
           isEmpty (text a) === Text.null a
       ],
     testGroup "toText" $
-      [ mapsToMonoid toText
+      [ mapsToMonoid toText,
+        testProperty "Roundtrips" \textValue ->
+          toText (text textValue) === textValue
       ],
     testGroup "string" $
-      [ mapsToMonoid string
+      [ mapsToMonoid string,
+        testProperty "Roundtrips" \builder ->
+          string (Text.unpack (toText builder)) === builder
       ],
     testGroup "text" $
-      [ mapsToMonoid text
+      [ mapsToMonoid text,
+        testProperty "Roundtrips" \builder ->
+          text (toText builder) === builder
       ],
     testGroup "lazyText" $
-      [ mapsToMonoid lazyText
+      [ mapsToMonoid lazyText,
+        testProperty "Roundtrips" \builder ->
+          lazyText (Text.Lazy.fromStrict (toText builder)) === builder
       ],
     testGroup "char" $
       [ mapsToMonoid char

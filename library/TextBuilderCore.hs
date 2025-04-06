@@ -20,6 +20,7 @@ module TextBuilderCore
     unicodeCodepoint,
 
     -- ** Primitives
+    unsafeChars,
     unsafeSeptets,
     unsafeReverseSeptets,
   )
@@ -136,7 +137,8 @@ isEmpty (TextBuilder maxSize _) = maxSize == 0
 -- | Construct from a list of characters.
 {-# INLINE string #-}
 string :: String -> TextBuilder
-string = text . Text.pack
+string string =
+  unsafeChars (length string) string
 
 -- | Strict text.
 {-# INLINEABLE text #-}
@@ -285,6 +287,81 @@ unsafeUtf16CodeUnits2 unit1 unit2 =
 #endif
 
 -- * Basic Unsafe Primitives
+
+-- |
+-- Helper for constructing from char producers a bit more efficiently than via @(text . fromString)@.
+--
+-- >>> unsafeChars 3 "123"
+-- "123"
+--
+-- >>> unsafeChars 4 "123"
+-- "123"
+{-# INLINE unsafeChars #-}
+unsafeChars ::
+  -- | Maximum size of the provided list of characters.
+  --
+  -- __Warning__: Must be greater than or equal to the length of the list.
+  Int ->
+  [Char] ->
+  TextBuilder
+#if MIN_VERSION_text(2,0,0)
+unsafeChars maxChars chars =
+  TextBuilder
+    (maxChars * 4)
+    ( \array ->
+        foldr
+          ( \char next offset ->
+              Utf8View.unicodeCodepoint
+                (ord char)
+                ( \byte -> do
+                    TextArray.unsafeWrite array offset byte
+                    next (succ offset)
+                )
+                ( \byte1 byte2 -> do
+                    TextArray.unsafeWrite array offset byte1
+                    TextArray.unsafeWrite array (succ offset) byte2
+                    next (offset + 2)
+                )
+                ( \byte1 byte2 byte3 -> do
+                    TextArray.unsafeWrite array offset byte1
+                    TextArray.unsafeWrite array (succ offset) byte2
+                    TextArray.unsafeWrite array (offset + 2) byte3
+                    next (offset + 3)
+                )
+                ( \byte1 byte2 byte3 byte4 -> do
+                    TextArray.unsafeWrite array offset byte1
+                    TextArray.unsafeWrite array (succ offset) byte2
+                    TextArray.unsafeWrite array (offset + 2) byte3
+                    TextArray.unsafeWrite array (offset + 3) byte4
+                    next (offset + 4)
+                )
+          )
+          return
+          chars
+    )
+#else
+unsafeChars maxChars chars =
+  TextBuilder
+    (maxChars * 2)
+    ( \array ->
+        foldr
+          ( \char next offset ->
+              Utf16View.unicodeCodepoint
+                (ord char)
+                ( \byte -> do
+                    TextArray.unsafeWrite array offset byte
+                    next (succ offset)
+                )
+                ( \byte1 byte2 -> do
+                    TextArray.unsafeWrite array offset byte1
+                    TextArray.unsafeWrite array (succ offset) byte2
+                    next (offset + 2)
+                )
+          )
+          return
+          chars
+    )
+#endif
 
 -- |
 -- Provides a unified way to deal with the byte array regardless of the version of the @text@ library.
