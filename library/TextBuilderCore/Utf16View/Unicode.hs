@@ -1,8 +1,8 @@
 -- |
 -- Utilities for construction of Unicode codepoints.
-module TextBuilderDev.Domains.Unicode.Utf16View.Unicode where
+module TextBuilderCore.Utf16View.Unicode where
 
-import TextBuilderDev.Prelude
+import TextBuilderCore.Prelude
 
 {-# INLINE utf8CodeUnits3 #-}
 utf8CodeUnits3 :: Word8 -> Word8 -> Word8 -> Int

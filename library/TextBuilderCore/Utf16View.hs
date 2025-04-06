@@ -1,7 +1,7 @@
-module TextBuilderDev.Domains.Unicode.Utf16View where
+module TextBuilderCore.Utf16View where
 
-import qualified TextBuilderDev.Domains.Unicode.Utf16View.Unicode as Unicode
-import TextBuilderDev.Prelude
+import TextBuilderCore.Prelude
+import qualified TextBuilderCore.Utf16View.Unicode as Unicode
 
 -- |
 -- A matching function, which chooses the continuation to run.
@@ -11,11 +11,11 @@ type Utf16View =
 {-# INLINE char #-}
 char :: Char -> Utf16View
 char x =
-  unicodeCodePoint (ord x)
+  unicodeCodepoint (ord x)
 
-{-# INLINE unicodeCodePoint #-}
-unicodeCodePoint :: Int -> Utf16View
-unicodeCodePoint x case1 case2 =
+{-# INLINE unicodeCodepoint #-}
+unicodeCodepoint :: Int -> Utf16View
+unicodeCodepoint x case1 case2 =
   if x < 0x10000
     then case1 (fromIntegral x)
     else case2 case2Unit1 case2Unit2
@@ -40,9 +40,9 @@ utf8CodeUnits2 byte1 byte2 case1 _ =
 {-# INLINE utf8CodeUnits3 #-}
 utf8CodeUnits3 :: Word8 -> Word8 -> Word8 -> Utf16View
 utf8CodeUnits3 byte1 byte2 byte3 =
-  unicodeCodePoint (Unicode.utf8CodeUnits3 byte1 byte2 byte3)
+  unicodeCodepoint (Unicode.utf8CodeUnits3 byte1 byte2 byte3)
 
 {-# INLINE utf8CodeUnits4 #-}
 utf8CodeUnits4 :: Word8 -> Word8 -> Word8 -> Word8 -> Utf16View
 utf8CodeUnits4 byte1 byte2 byte3 byte4 =
-  unicodeCodePoint (Unicode.utf8CodeUnits4 byte1 byte2 byte3 byte4)
+  unicodeCodepoint (Unicode.utf8CodeUnits4 byte1 byte2 byte3 byte4)

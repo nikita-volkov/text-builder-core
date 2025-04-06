@@ -6,17 +6,24 @@ import qualified Data.Text.Encoding as D
 import qualified Data.Text.Lazy as C
 import qualified Data.Text.Lazy.Builder as B
 import Test.Tasty.Bench
-import qualified TextBuilderDev as A
+import qualified TextBuilderCore as A
 import Prelude
 
 main :: IO ()
 main =
   defaultMain
-    [ bgroup "Competition" textConcatenation,
-      bgroup "Features" features
+    [ bgroup "Features" features,
+      bgroup "Competition" competition
     ]
   where
-    textConcatenation =
+    features =
+      [ bench "text" $ whnf (A.toText . A.text) "фывапролдж",
+        bench "lazyText" $ whnf (A.toText . A.lazyText) "фывапролдж",
+        bench "char" $ whnf (A.toText . A.char) 'ф',
+        bench "unicodeCodepoint" $ whnf (A.toText . A.unicodeCodepoint) 1092
+      ]
+
+    competition =
       [ bgroup "Left-biased mappend" $ byConcat $ foldl' (<>) mempty,
         bgroup "Right-biased mappend" $ byConcat $ foldl' (flip (<>)) mempty,
         bgroup "mconcat" $ byConcat $ mconcat
@@ -31,7 +38,7 @@ main =
           where
             byTexts texts =
               [ bench
-                  "TextBuilderDev.TextBuilder"
+                  "TextBuilderCore.TextBuilder"
                   ( whnf
                       (A.toText . concat)
                       (fmap A.text texts)
@@ -67,11 +74,3 @@ main =
                       (fmap Data.Text.Builder.Linear.fromText texts)
                   )
               ]
-
-    features =
-      [ bench "finiteBits" $ whnf (A.toText . A.finiteBits) (123456 :: Int),
-        bench "paddedFiniteBits" $ whnf (A.toText . A.paddedFiniteBits) (123456 :: Int),
-        bench "binary" $ whnf (A.toText . A.binary) (123456 :: Int),
-        bench "decimal" $ whnf (A.toText . A.decimal) (123456 :: Int),
-        bench "hexadecimal" $ whnf (A.toText . A.hexadecimal) (123456 :: Int)
-      ]

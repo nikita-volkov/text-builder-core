@@ -1,17 +1,15 @@
 cabal-version: 3.0
-name: text-builder-dev
-version: 0.3.10
+name: text-builder-core
+version: 0
 category: Text, Builders
-synopsis: Edge of developments for "text-builder"
+synopsis: Internals of "text-builder"
 description:
-  This is a development version of \"text-builder\".
-  All experimentation and feature development happens here.
-  The API can change drastically.
-  For a more stable API use \"text-builder\",
-  which is now just a wrapper over this package.
+  Core functionality of \"text-builder\" with guts exposed for efficient custom integrations.
 
-homepage: https://github.com/nikita-volkov/text-builder-dev
-bug-reports: https://github.com/nikita-volkov/text-builder-dev/issues
+  Consider this to be what you'll find in the \"Internal\" modules of packages violating PVP. You'll find more on this in [a blog post](https://nikita-volkov.github.io/internal-convention-is-a-mistake/).
+
+homepage: https://github.com/nikita-volkov/text-builder-core
+bug-reports: https://github.com/nikita-volkov/text-builder-core/issues
 author: Nikita Volkov <nikita.y.volkov@mail.ru>
 maintainer: Nikita Volkov <nikita.y.volkov@mail.ru>
 copyright: (c) 2022, Nikita Volkov
@@ -20,7 +18,7 @@ license-file: LICENSE
 
 source-repository head
   type: git
-  location: https://github.com/nikita-volkov/text-builder-dev
+  location: https://github.com/nikita-volkov/text-builder-core
 
 common base
   default-language: Haskell2010
@@ -70,33 +68,17 @@ common base
 library
   import: base
   hs-source-dirs: library
-  exposed-modules: TextBuilderDev
+  exposed-modules: TextBuilderCore
   other-modules:
-    TextBuilderDev.Core
-    TextBuilderDev.Domains.Bits
-    TextBuilderDev.Domains.ByteString
-    TextBuilderDev.Domains.Digits
-    TextBuilderDev.Domains.Other
-    TextBuilderDev.Domains.Padding
-    TextBuilderDev.Domains.StrictBuilder
-    TextBuilderDev.Domains.StrictTextBuilder
-    TextBuilderDev.Domains.Time
-    TextBuilderDev.Domains.Unicode
-    TextBuilderDev.Domains.Unicode.Utf16View
-    TextBuilderDev.Domains.Unicode.Utf16View.Unicode
-    TextBuilderDev.Domains.Unicode.Utf8View
-    TextBuilderDev.IsTextBuilder
-    TextBuilderDev.Prelude
+    TextBuilderCore.Prelude
+    TextBuilderCore.Utf16View
+    TextBuilderCore.Utf16View.Unicode
+    TextBuilderCore.Utf8View
 
   build-depends:
     QuickCheck >=2.14 && <3,
     base >=4.11 && <5,
-    bytestring >=0.10 && <0.13,
-    quickcheck-instances >=0.3.28 && <0.4,
-    split >=0.2.3.4 && <0.3,
     text >=1.2 && <3,
-    time >=1.12 && <2,
-    transformers >=0.5 && <0.7,
 
 test-suite test
   import: base
@@ -105,24 +87,18 @@ test-suite test
   main-is: Main.hs
   other-modules:
     Features
-    Features.StrictBuilder
-    Features.StrictTextBuilder
     Util.ExtraInstances
     Util.TestTrees
 
   build-depends:
     QuickCheck >=2.14 && <3,
     base >=4.11 && <5,
-    base-compat >=0.13,
-    bytestring >=0.10 && <0.13,
     quickcheck-classes >=0.6.5 && <0.7,
     quickcheck-instances >=0.3.32 && <0.4,
     tasty >=1.2.3 && <2,
-    tasty-hunit >=0.10.0.2 && <0.11,
-    tasty-quickcheck >=0.10.1 && <0.12,
+    tasty-quickcheck ^>=0.11,
     text >=1.2 && <3,
-    text-builder-dev,
-    time >=1.12 && <2,
+    text-builder-core,
 
 benchmark bench
   import: base
@@ -141,5 +117,5 @@ benchmark bench
     base >=4.11 && <5,
     tasty-bench ^>=0.4.1,
     text >=2.1.2 && <3,
-    text-builder-dev,
+    text-builder-core,
     text-builder-linear ^>=0.1.3,

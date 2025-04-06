@@ -1,6 +1,6 @@
-module TextBuilderDev.Domains.Unicode.Utf8View where
+module TextBuilderCore.Utf8View where
 
-import TextBuilderDev.Prelude
+import TextBuilderCore.Prelude
 
 -- |
 -- A matching function, which chooses the continuation to run.
@@ -12,9 +12,9 @@ type Utf8View =
   (Word8 -> Word8 -> Word8 -> Word8 -> x) ->
   x
 
-{-# INLINE unicodeCodePoint #-}
-unicodeCodePoint :: Int -> Utf8View
-unicodeCodePoint x case1 case2 case3 case4
+{-# INLINE unicodeCodepoint #-}
+unicodeCodepoint :: Int -> Utf8View
+unicodeCodepoint x case1 case2 case3 case4
   | x < 0x80 = case1 (fromIntegral x)
   | x < 0x800 =
       case2

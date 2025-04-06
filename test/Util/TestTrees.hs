@@ -2,13 +2,12 @@ module Util.TestTrees where
 
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Monoid
-import Data.Proxy
 import Data.Semigroup
 import Test.QuickCheck
+import Test.QuickCheck.Classes
 import Test.QuickCheck.Instances ()
 import Test.Tasty
 import Test.Tasty.QuickCheck
-import TextBuilderDev
 import Prelude
 
 -- | Tests mapping from @a@ to @b@ to produce a valid 'Monoid'.
@@ -29,12 +28,12 @@ import Prelude
 --   @mconcat as ≡ foldr mappend mempty as@
 mapsToMonoid ::
   forall a b.
-  (Arbitrary a, Show a, Eq a, Monoid b, Eq b, Show b) =>
+  (Arbitrary a, Monoid b, Eq b, Show b) =>
   -- | Embed in monoid.
   (a -> b) ->
   TestTree
 mapsToMonoid embed =
-  customGenMonoid (embed <$> arbitrary)
+  isMonoidWithCustomGen (embed <$> arbitrary)
 
 -- | Tests mapping from @a@ to @b@ to produce a valid 'Monoid'.
 --
@@ -52,11 +51,11 @@ mapsToMonoid embed =
 --   @mappend a mempty ≡ a@
 -- [/Monoid Concatenation/]
 --   @mconcat as ≡ foldr mappend mempty as@
-customGenMonoid ::
+isMonoidWithCustomGen ::
   (Monoid a, Eq a, Show a) =>
   Gen a ->
   TestTree
-customGenMonoid gen =
+isMonoidWithCustomGen gen =
   testGroup
     "Monoid"
     [ testProperty "Is associative" do
@@ -82,18 +81,6 @@ customGenMonoid gen =
         pure (mconcat xs === foldr mappend mempty xs)
     ]
 
-isTextBuilder ::
-  forall a.
-  (IsTextBuilder a, Eq a, Show a, Arbitrary a) =>
-  Proxy a ->
-  TestTree
-isTextBuilder proxy =
-  testGroup "IsTextBuilder" $
-    [ testProperty "to . from == id" $ \a ->
-        (to . from) a === asProxyTypeOf a proxy,
-      testProperty "from . to == id" $ \a ->
-        (from . flip asProxyTypeOf proxy . to) a === a,
-      testGroup "from" $
-        [ mapsToMonoid (from @a)
-        ]
-    ]
+followsLaws :: Laws -> TestTree
+followsLaws Laws {..} =
+  testProperties lawsTypeclass lawsProperties

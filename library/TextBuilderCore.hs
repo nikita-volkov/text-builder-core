@@ -1,10 +1,40 @@
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
-module TextBuilderDev.Core where
+module TextBuilderCore
+  ( TextBuilder (..),
 
+    -- * Destructors
+    isEmpty,
+    toText,
+
+    -- * Constructors
+
+    -- ** Text
+    text,
+    lazyText,
+
+    -- ** Character
+    char,
+    unicodeCodepoint,
+
+    -- ** Primitives
+    unsafeSeptets,
+    unsafeReverseSeptets,
+  )
+where
+
+import qualified Data.Text as Text
 import qualified Data.Text.Array as TextArray
 import qualified Data.Text.Internal as TextInternal
-import TextBuilderDev.Prelude hiding (null)
+import qualified Data.Text.Lazy as TextLazy
+import TextBuilderCore.Prelude
+
+#if MIN_VERSION_text(2,0,0)
+import qualified TextBuilderCore.Utf8View as Utf8View
+#else
+import qualified TextBuilderCore.Utf16View as Utf16View
+#endif
 
 -- |
 -- Specification of how to efficiently construct strict 'Text'.
@@ -15,6 +45,11 @@ import TextBuilderDev.Prelude hiding (null)
 data TextBuilder
   = TextBuilder
       -- | Estimated maximum size of the byte array to allocate.
+      --
+      -- If the builder is empty it must be 0.
+      -- Otherwise it must be greater than or equal to the amount of bytes to be written.
+      --
+      -- __Warning:__ Due to \"text\" switching from UTF-16 to UTF-8 since version 2, 'Word16' is used as the byte when \"text\" version is <2 and 'Word8' is used when it's >=2.
       Int
       -- | Function that populates a preallocated byte array of the estimated maximum size specified above provided an offset into it and producing the offset after.
       --
@@ -76,7 +111,8 @@ instance Monoid TextBuilder where
       )
 
 instance Arbitrary TextBuilder where
-  arbitrary = text <$> arbitrary
+  arbitrary = text . Text.pack <$> arbitrary
+  shrink a = text . Text.pack <$> shrink (Text.unpack (toText a))
 
 -- * Destructors
 
@@ -89,14 +125,10 @@ toText (TextBuilder maxSize write) =
     frozenArray <- TextArray.unsafeFreeze array
     return $ TextInternal.text frozenArray 0 offsetAfter
 
--- | Estimate the maximum amount of bytes that the produced text can take.
-toMaxSize :: TextBuilder -> Int
-toMaxSize (TextBuilder maxSize _) = maxSize
-
 -- | Check whether the builder is empty.
-{-# INLINE null #-}
-null :: TextBuilder -> Bool
-null = (== 0) . toMaxSize
+{-# INLINE isEmpty #-}
+isEmpty :: TextBuilder -> Bool
+isEmpty (TextBuilder maxSize _) = maxSize == 0
 
 -- * Constructors
 
@@ -114,6 +146,136 @@ text (TextInternal.Text array offset length) =
     let builderOffsetAfter = builderOffset + length
     TextArray.copyI builderArray builderOffset array offset builderOffsetAfter
     return builderOffsetAfter
+#endif
+
+-- | Lazy text.
+{-# INLINE lazyText #-}
+lazyText :: TextLazy.Text -> TextBuilder
+lazyText =
+  TextLazy.foldrChunks (mappend . text) mempty
+
+-- ** Codepoint
+
+-- | Unicode character.
+{-# INLINE char #-}
+char :: Char -> TextBuilder
+char = unicodeCodepoint . ord
+
+-- | Safe Unicode codepoint with invalid values replaced by the @�@ char (codepoint @0xfffd@),
+-- which is the same as what @Data.Text.'Data.Text.pack'@ does.
+{-# INLINE unicodeCodepoint #-}
+unicodeCodepoint :: Int -> TextBuilder
+unicodeCodepoint = unsafeUnicodeCodepoint . project
+  where
+    project x =
+      if x .&. 0x1ff800 /= 0xd800
+        then x
+        else 0xfffd
+
+-- | Unicode codepoint.
+--
+-- __Warning:__ It is your responsibility to ensure that the codepoint is in proper range,
+-- otherwise the produced text will be broken.
+-- It must be in the range of 0x0000 to 0x10FFFF.
+{-# INLINE unsafeUnicodeCodepoint #-}
+unsafeUnicodeCodepoint :: Int -> TextBuilder
+#if MIN_VERSION_text(2,0,0)
+unsafeUnicodeCodepoint x =
+  Utf8View.unicodeCodepoint x unsafeUtf8CodeUnits1 unsafeUtf8CodeUnits2 unsafeUtf8CodeUnits3 unsafeUtf8CodeUnits4
+#else
+unsafeUnicodeCodepoint x =
+  Utf16View.unicodeCodepoint x unsafeUtf16CodeUnits1 unsafeUtf16CodeUnits2
+#endif
+
+-- | Single code-unit UTF-8 character.
+unsafeUtf8CodeUnits1 :: Word8 -> TextBuilder
+#if MIN_VERSION_text(2,0,0)
+{-# INLINEABLE unsafeUtf8CodeUnits1 #-}
+unsafeUtf8CodeUnits1 unit1 =
+  TextBuilder 1 \array offset ->
+    TextArray.unsafeWrite array offset unit1
+      $> succ offset
+#else
+{-# INLINE unsafeUtf8CodeUnits1 #-}
+unsafeUtf8CodeUnits1 unit1 =
+  Utf16View.utf8CodeUnits1 unit1 unsafeUtf16CodeUnits1 unsafeUtf16CodeUnits2
+#endif
+
+-- | Double code-unit UTF-8 character.
+unsafeUtf8CodeUnits2 :: Word8 -> Word8 -> TextBuilder
+#if MIN_VERSION_text(2,0,0)
+{-# INLINEABLE unsafeUtf8CodeUnits2 #-}
+unsafeUtf8CodeUnits2 unit1 unit2 =
+  TextBuilder 2 \array offset -> do
+    TextArray.unsafeWrite array offset unit1
+    TextArray.unsafeWrite array (offset + 1) unit2
+    return $ offset + 2
+#else
+{-# INLINE unsafeUtf8CodeUnits2 #-}
+unsafeUtf8CodeUnits2 unit1 unit2 =
+  Utf16View.utf8CodeUnits2 unit1 unit2 unsafeUtf16CodeUnits1 unsafeUtf16CodeUnits2
+#endif
+
+-- | Triple code-unit UTF-8 character.
+unsafeUtf8CodeUnits3 :: Word8 -> Word8 -> Word8 -> TextBuilder
+#if MIN_VERSION_text(2,0,0)
+{-# INLINEABLE unsafeUtf8CodeUnits3 #-}
+unsafeUtf8CodeUnits3 unit1 unit2 unit3 =
+  TextBuilder 3 \array offset -> do
+    TextArray.unsafeWrite array offset unit1
+    TextArray.unsafeWrite array (offset + 1) unit2
+    TextArray.unsafeWrite array (offset + 2) unit3
+    return $ offset + 3
+#else
+{-# INLINE unsafeUtf8CodeUnits3 #-}
+unsafeUtf8CodeUnits3 unit1 unit2 unit3 =
+  Utf16View.utf8CodeUnits3 unit1 unit2 unit3 unsafeUtf16CodeUnits1 unsafeUtf16CodeUnits2
+#endif
+
+-- | UTF-8 character out of 4 code units.
+unsafeUtf8CodeUnits4 :: Word8 -> Word8 -> Word8 -> Word8 -> TextBuilder
+#if MIN_VERSION_text(2,0,0)
+{-# INLINEABLE unsafeUtf8CodeUnits4 #-}
+unsafeUtf8CodeUnits4 unit1 unit2 unit3 unit4 =
+  TextBuilder 4 \array offset -> do
+    TextArray.unsafeWrite array offset unit1
+    TextArray.unsafeWrite array (offset + 1) unit2
+    TextArray.unsafeWrite array (offset + 2) unit3
+    TextArray.unsafeWrite array (offset + 3) unit4
+    return $ offset + 4
+#else
+{-# INLINE unsafeUtf8CodeUnits4 #-}
+unsafeUtf8CodeUnits4 unit1 unit2 unit3 unit4 =
+  Utf16View.utf8CodeUnits4 unit1 unit2 unit3 unit4 unsafeUtf16CodeUnits1 unsafeUtf16CodeUnits2
+#endif
+
+-- | Single code-unit UTF-16 character.
+unsafeUtf16CodeUnits1 :: Word16 -> TextBuilder
+#if MIN_VERSION_text(2,0,0)
+{-# INLINE unsafeUtf16CodeUnits1 #-}
+unsafeUtf16CodeUnits1 = unsafeUnicodeCodepoint . fromIntegral
+#else
+{-# INLINEABLE unsafeUtf16CodeUnits1 #-}
+unsafeUtf16CodeUnits1 unit =
+  TextBuilder 1 \array offset ->
+    TextArray.unsafeWrite array offset unit
+      $> succ offset
+#endif
+
+-- | Double code-unit UTF-16 character.
+unsafeUtf16CodeUnits2 :: Word16 -> Word16 -> TextBuilder
+#if MIN_VERSION_text(2,0,0)
+{-# INLINE unsafeUtf16CodeUnits2 #-}
+unsafeUtf16CodeUnits2 unit1 unit2 = unsafeUnicodeCodepoint cp
+  where
+    cp = (((fromIntegral unit1 .&. 0x3FF) `shiftL` 10) .|. (fromIntegral unit2 .&. 0x3FF)) + 0x10000
+#else
+{-# INLINEABLE unsafeUtf16CodeUnits2 #-}
+unsafeUtf16CodeUnits2 unit1 unit2 =
+  TextBuilder 2 \array offset -> do
+    TextArray.unsafeWrite array offset unit1
+    TextArray.unsafeWrite array (succ offset) unit2
+    return $ offset + 2
 #endif
 
 -- * Basic Unsafe Primitives
