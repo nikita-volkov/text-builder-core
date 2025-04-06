@@ -25,6 +25,9 @@ tests =
     testGroup "toText" $
       [ mapsToMonoid toText
       ],
+    testGroup "string" $
+      [ mapsToMonoid string
+      ],
     testGroup "text" $
       [ mapsToMonoid text
       ],

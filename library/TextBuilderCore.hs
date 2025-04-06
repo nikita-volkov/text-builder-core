@@ -11,6 +11,7 @@ module TextBuilderCore
     -- * Constructors
 
     -- ** Text
+    string,
     text,
     lazyText,
 
@@ -65,7 +66,7 @@ data TextBuilder
       (forall s. TextArray.MArray s -> Int -> ST s Int)
 
 instance IsString TextBuilder where
-  fromString = text . fromString
+  fromString = string
 
 instance Show TextBuilder where
   show = show . toText
@@ -131,6 +132,11 @@ isEmpty :: TextBuilder -> Bool
 isEmpty (TextBuilder maxSize _) = maxSize == 0
 
 -- * Constructors
+
+-- | Construct from a list of characters.
+{-# INLINE string #-}
+string :: String -> TextBuilder
+string = text . Text.pack
 
 -- | Strict text.
 {-# INLINEABLE text #-}

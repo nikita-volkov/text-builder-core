@@ -17,7 +17,8 @@ main =
     ]
   where
     features =
-      [ bench "text" $ whnf (A.toText . A.text) "фывапролдж",
+      [ bench "string" $ whnf (A.toText . A.string) "фывапролдж",
+        bench "text" $ whnf (A.toText . A.text) "фывапролдж",
         bench "lazyText" $ whnf (A.toText . A.lazyText) "фывапролдж",
         bench "char" $ whnf (A.toText . A.char) 'ф',
         bench "unicodeCodepoint" $ whnf (A.toText . A.unicodeCodepoint) 1092

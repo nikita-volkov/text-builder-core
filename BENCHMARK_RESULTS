@@ -1,5 +1,7 @@
 All
   Features
+    string:                                   OK
+      44.1 ns ± 3.6 ns, 208 B  allocated,   0 B  copied, 6.0 MB peak memory
     text:                                     OK
       11.1 ns ± 902 ps,  96 B  allocated,   0 B  copied, 6.0 MB peak memory
     lazyText:                                 OK
