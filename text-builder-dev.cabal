@@ -104,15 +104,19 @@ test-suite test
   hs-source-dirs: test
   main-is: Main.hs
   other-modules:
-    Main.StrictTextBuilder
-    Main.TastyExtras
+    Features
+    Features.StrictBuilder
+    Features.StrictTextBuilder
+    Util.ExtraInstances
+    Util.TestTrees
 
   build-depends:
+    QuickCheck >=2.14 && <3,
     base >=4.11 && <5,
     base-compat >=0.13,
     bytestring >=0.10 && <0.13,
     quickcheck-classes >=0.6.5 && <0.7,
-    quickcheck-instances >=0.3.28 && <0.4,
+    quickcheck-instances >=0.3.32 && <0.4,
     tasty >=1.2.3 && <2,
     tasty-hunit >=0.10.0.2 && <0.11,
     tasty-quickcheck >=0.10.1 && <0.12,

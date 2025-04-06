@@ -13,8 +13,7 @@ import qualified Data.Text.Lazy.Builder as TextLazyBuilder
 import Data.Time
 import Data.Time.Format.ISO8601 (iso8601Show)
 import Data.Word
-import qualified Main.StrictTextBuilder as StrictTextBuilder
-import qualified Main.TastyExtras as Extras
+import qualified Features
 import Numeric.Compat
 import Numeric.Natural
 import Test.QuickCheck.Classes
@@ -23,6 +22,8 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck hiding ((.&.))
 import qualified TextBuilderDev as B
+import Util.ExtraInstances ()
+import Util.TestTrees
 import Prelude
 
 main :: IO ()
@@ -30,7 +31,7 @@ main = (defaultMain . testGroup "All") tests
 
 tests :: [TestTree]
 tests =
-  [ testGroup "StrictTextBuilder" StrictTextBuilder.tests,
+  [ testGroup "Features" Features.tests,
     testProperty "ASCII ByteString" $
       let gen = listOf $ do
             list <- listOf (choose (0, 127))
@@ -198,9 +199,15 @@ tests =
           ]
       ],
     testGroup "IsTextBuilder instances" $
-      [ Extras.isTextBuilderLaws "Text" $ Proxy @Text,
-        Extras.isTextBuilderLaws "Lazy Text" $ Proxy @TextLazy.Text,
-        Extras.isTextBuilderLaws "Lazy Text Builder" $ Proxy @TextLazyBuilder.Builder
+      [ testGroup "Text" $
+          [ isTextBuilder $ Proxy @Text
+          ],
+        testGroup "Lazy Text" $
+          [ isTextBuilder $ Proxy @TextLazy.Text
+          ],
+        testGroup "Lazy Text Builder" $
+          [ isTextBuilder $ Proxy @TextLazyBuilder.Builder
+          ]
       ],
     testLaws $ showLaws (Proxy @B.TextBuilder),
     testLaws $ eqLaws (Proxy @B.TextBuilder),

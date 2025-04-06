@@ -3,8 +3,7 @@
 
 module TextBuilderDev.Domains.StrictBuilder where
 
-#if MIN_VERSION_text(2,1,2)
-#elif MIN_VERSION_text(2,0,2)
+#if MIN_VERSION_text(2,0,2) && !MIN_VERSION_text(2,1,2)
 
 import Data.Text.Internal.StrictBuilder
 import qualified TextBuilderDev.Core as Base
