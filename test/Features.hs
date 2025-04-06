@@ -1,6 +1,7 @@
 module Features (tests) where
 
 import Control.Monad
+import Data.Char
 import Data.String
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.Lazy
@@ -44,10 +45,14 @@ tests =
           lazyText (Text.Lazy.fromStrict (toText builder)) === builder
       ],
     testGroup "char" $
-      [ mapsToMonoid char
+      [ mapsToMonoid char,
+        testProperty "Is isomorphic to Text.singleton" \a ->
+          toText (char a) === Text.singleton a
       ],
     testGroup "unicodeCodepoint" $
-      [ mapsToMonoid unicodeCodepoint
+      [ mapsToMonoid unicodeCodepoint,
+        testProperty "Is isomorphic to Text.singleton" \a ->
+          toText (unicodeCodepoint (ord a)) === Text.singleton a
       ],
     testGroup "unsafeSeptets" $
       [ isMonoidWithCustomGen do

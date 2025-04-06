@@ -1,8 +1,6 @@
 module Main where
 
-import qualified Data.Char as Char
 import Data.Proxy
-import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Features
 import Test.QuickCheck.Classes
@@ -36,11 +34,7 @@ tests =
           \texts ->
             let trimmedTexts = fmap (Text.drop 3) texts
              in mconcat trimmedTexts
-                  === B.toText (mconcat (map B.text trimmedTexts)),
-        testProperty "(TextBuilderCore.unicodeCodepoint <>) is isomorphic to Text.cons" $
-          withMaxSuccess bigTest $
-            \(text :: Text) (c :: Char) ->
-              B.toText (B.unicodeCodepoint (Char.ord c) <> B.text text) === Text.cons c text
+                  === B.toText (mconcat (map B.text trimmedTexts))
       ],
     testGroup "Laws" $
       [ followsLaws $ showLaws (Proxy @B.TextBuilder),
@@ -50,5 +44,3 @@ tests =
       ],
     testGroup "Features" Features.tests
   ]
-  where
-    bigTest = 10000
