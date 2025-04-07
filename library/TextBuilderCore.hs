@@ -39,9 +39,7 @@ import qualified TextBuilderCore.Utf16View as Utf16View
 #endif
 
 -- |
--- Specification of how to efficiently construct strict 'Text'.
---
--- For this task it is much more efficient than @Data.Text.Lazy.Builder.'Data.Text.Lazy.Builder.Builder'@ and even the recently introduced @Data.Text.Encoding.'Data.Text.Encoding.StrictTextBuilder'@.
+-- Composable specification of how to efficiently construct strict 'Text'.
 --
 -- Provides instances of 'Semigroup' and 'Monoid', which have complexity of /O(1)/.
 data TextBuilder
