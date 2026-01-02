@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name: text-builder-core
-version: 0.1.1.1
+version: 0.1.1.2
 category: Text, Builders
 synopsis: Internals of "text-builder"
 description:
@@ -115,7 +115,7 @@ benchmark bench
   main-is: Main.hs
   build-depends:
     base >=4.11 && <5,
-    tasty-bench ^>=0.4.1,
+    tasty-bench ^>=0.5,
     text >=2.1.2 && <3,
     text-builder-core,
     text-builder-linear ^>=0.1.3,
